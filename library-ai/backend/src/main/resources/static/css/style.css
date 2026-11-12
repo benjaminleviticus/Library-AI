@@ -1,0 +1,524 @@
+/* ================== Body & Fonts ================== */
+body {
+  /* Decorative font is reserved for headings/nav/buttons; body text stays readable */
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1.5;
+  margin: 0;
+  background: #1b1b1b;
+  color: #f0f0f0;
+  scroll-behavior: smooth;
+}
+
+h2 { 
+  font-family: 'Cinzel Decorative', serif; 
+  text-align: center; 
+  margin-bottom: 1.5rem; 
+  color: #ffa500; 
+}
+h1, h3, h4 { font-family: 'Cinzel Decorative', Georgia, serif; }
+nav, .btn-hand, .form-container button, .form-container label, .form-container h2 { font-family: 'Cinzel Decorative', Georgia, serif; }
+
+/* ================== Hand Background ================== */
+.hand-bg {
+  background:
+    linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+    url('../images/hand-bg.jpg') no-repeat center top fixed;
+  background-size: cover;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ================== Navigation ================== */
+nav {
+  background: rgba(0, 0, 0, 0.75);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  color: #f0cd0a;
+  z-index: 999;
+}
+
+nav .book-img {
+  height: 16px;
+  width: auto;
+  vertical-align: middle;
+  margin-right: 10px;
+}
+
+.nav-links a {  
+  color: #f0cd0a;
+  font-weight: bold; 
+  padding: 1rem 2rem; 
+  border-radius: 5px; 
+  text-decoration: none;
+  transition: 0.3s;
+}
+.nav-links a:hover { 
+  background: rgba(255, 165, 0, 0.2); 
+  color: #fb981f;
+  box-shadow: inset 0 -10px 10px -3px #f0cd0a;
+}
+
+.hamburger { 
+  display: none; 
+  flex-direction: column; 
+  cursor: pointer; 
+  gap: 5px; 
+  background: none;
+  border: 0;
+  padding: 0.4rem;
+}
+.hamburger span { 
+  display: block; 
+  width: 25px; 
+  height: 3px; 
+  background: #f0f0f0; 
+  border-radius: 2px; 
+}
+
+/* ================== Hand Section ================== */
+.hand {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  z-index: 1;
+  overflow: visible;
+}
+
+.hand-content {
+  position: relative;
+  z-index: 3; /* on top of hand image */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.hand h1 { 
+  font-size: 4rem; 
+  color: #f0cd0a; 
+  text-shadow: 0 0 15px #000; 
+  margin: 0.5rem 0; 
+  opacity: 0; 
+  animation: fadeUp 2.5s ease 0.5s forwards;
+}
+.hand p { 
+  font-size: 1.5rem; 
+  margin: 1rem 0; 
+  color: #fff; 
+  text-shadow: 0 0 10px #f0cd0a; 
+  opacity: 0; 
+  animation: fadeUp 2.5s ease 1.5s forwards; 
+}
+.btn-hand { 
+  display: inline-block; 
+  padding: 1rem 2rem; 
+  background: #f0cd0a; 
+  border-radius: 8px; 
+  color: #111; 
+  text-decoration: none; 
+  font-weight: bold; 
+  letter-spacing: 1px; 
+  box-shadow: 0 0 10px rgba(240, 205, 10, 0.5); 
+  opacity: 0; 
+  animation: fadeUp 2.5s ease 2.5s forwards; 
+  transition: transform 0.3s ease, box-shadow 0.3s ease; 
+}
+.btn-hand:hover { 
+  transform: translateY(-3px) scale(1.05); 
+  box-shadow: 0 0 25px rgba(240, 205, 10, 0.9); 
+}
+
+.hand-img {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) scale(1);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease-out;
+  width: clamp(200px, 35vw, 400px);
+  height: auto;
+  max-height: 80vh;
+  z-index: 0; /* behind the content */
+  pointer-events: none;
+  filter: drop-shadow(0 0 15px rgba(240, 205, 10, 0.3));
+}
+
+.hand-section-wrapper {
+  position: relative;
+  overflow: visible;
+}
+
+/* ================== Particle Background ================== */
+#particles { 
+  position: fixed; 
+  top: 0; left: 0; 
+  width: 100%; 
+  height: 200vh; 
+  z-index: 0; 
+  pointer-events: none; 
+  overflow: hidden; 
+}
+.particle { 
+  position: absolute; 
+  border-radius: 50%; 
+  background: radial-gradient(hsl(50,100%,80%), hsl(50,100%,70%) 30%, hsla(50,100%,80%,0) 70%); 
+  mix-blend-mode: screen; 
+  opacity: 0.8; 
+  animation: float linear infinite;
+}
+@keyframes float { 
+  from {transform: translateY(100vh) scale(0.4); opacity: 0.6;} 
+  50% {opacity: 1;} 
+  to {transform: translateY(-150vh) scale(1.5); opacity: 0;} 
+}
+@keyframes fadeUp { 
+  to { opacity: 1; transform: translateY(0); } 
+}
+
+/* ================== Featured Books ================== */
+#bookList { 
+  display: flex; 
+  flex-wrap: wrap; 
+  justify-content: space-evenly; 
+  gap: 2rem; 
+  list-style: none; 
+  padding: 0; 
+  width: 100%; 
+  overflow-x: hidden; 
+}
+li.book-card {
+  position: relative;
+  width: 200px;
+  height: 300px; /* fixes height for consistent flipping */
+  cursor: pointer;
+  perspective: 1000px;
+}
+
+.card-inner {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+.card-front, .card-back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+}
+
+.card-front {
+  background: rgba(30,30,30,0.6);
+  color: #f0cd0a;
+  box-shadow: 0 4px 10px #f0cd0a;
+}
+
+.card-front img.book-img {
+  width: 100%;
+  height: 70%;
+  object-fit: cover;
+  border-radius: 10px 10px 0 0;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.card-back {
+  background: rgba(50,50,50,0.95);
+  color: #fff;
+  transform: rotateY(180deg);
+  text-align: center;
+  font-size: 0.9rem;
+  padding: 1rem;
+}
+
+li.book-card:hover .card-inner,
+li.book-card.show-summary .card-inner {
+  transform: rotateY(180deg);
+}
+
+
+/* ================== Responsive Media ================== */
+@media(max-width:868px){
+  .nav-links { 
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: rgba(0, 0, 0, 0.85);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 2rem;
+    display: none;
+    width: 200px;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    z-index: 998;
+  }
+
+  .nav-links.show {
+    display: flex;
+    animation: dropdownFade 0.3s ease forwards;
+  }
+
+  .hamburger {
+    display: flex;
+    z-index: 999;
+  }
+
+  nav {
+    position: relative;
+  }
+
+  @keyframes dropdownFade {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  #bookList { 
+    flex-direction: column; 
+    align-items: center; 
+  }
+
+  li.book-card {
+    width: 80%;
+    height: auto;
+  }
+
+  .card-inner {
+    height: auto;
+  }
+
+  .card-front, .card-back {
+    position: relative;
+    transform: none;
+    backface-visibility: visible;
+    width: 100%;
+    height: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+
+  .card-front img.book-img {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  }
+
+  li.book-card:hover .card-inner {
+    transform: none;
+  }
+
+  .card-back {
+    display: none;
+  }
+
+  li.book-card.show-summary .card-front {
+    display: none;
+  }
+
+  li.book-card.show-summary .card-back {
+    display: block;
+  }
+
+  .card-back p {
+    margin: 1rem;
+    font-size: 1rem;
+    color: #fff;
+  }
+}
+
+/* ================== Animation Helpers ================== */
+.animate { opacity: 0; transform: translateY(15px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.animate.show { opacity: 1; transform: translateY(0); }
+
+/* ================== Login & Submit Book Forms ================== */
+.form-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  color: #f0cd0a;
+  padding: 2rem 1rem;
+}
+
+.form-container {
+  width: 90%;
+  max-width: 500px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  padding: 2rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  animation: fadeInUp 0.8s ease forwards;
+}
+
+.form-container h2 {
+  text-align: center;
+  color: #f0cd0a;
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.form-container label {
+  font-weight: bold;
+  color: #f0cd0a;
+  margin-bottom: 0.3rem;
+}
+
+.form-container input,
+.form-container textarea {
+  width: 100%;
+  padding: 0.8rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-container input:focus,
+.form-container textarea:focus {
+  outline: none;
+  border-color: #f0cd0a;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.form-container button {
+  padding: 0.9rem;
+  background: #f0cd0a;
+  color: #111;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.form-container button:hover {
+  background: #ffd700;
+  transform: scale(1.03);
+}
+
+.form-link {
+  display: block;
+  text-align: center;
+  color: #f0cd0a;
+  text-decoration: none;
+  font-weight: bold;
+  margin-top: 1rem;
+  transition: color 0.3s ease;
+}
+
+.form-link:hover {
+  color: #fff;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ================== Added: accessibility & polish ================== */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+.skip-link {
+  position: absolute; left: -999px; top: 0; z-index: 2000;
+  background: #f0cd0a; color: #111; padding: 0.6rem 1rem; font-weight: bold;
+}
+.skip-link:focus { left: 0; }
+
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
+textarea:focus-visible, li.book-card:focus-visible, .hamburger:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+li.book-card:focus-visible .card-inner { transform: rotateY(180deg); }
+
+.book-filters {
+  display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+  margin: 0 auto 1.5rem; max-width: 700px;
+}
+.book-filters input, .book-filters select {
+  flex: 1 1 220px; padding: 0.7rem 0.9rem; border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.3); background: rgba(0,0,0,0.6);
+  color: #fff; font-size: 1rem; font-family: inherit;
+}
+.book-status { text-align: center; color: #f0f0f0; min-height: 1.5rem; margin: 0 0 1rem; }
+
+.card-back { flex-direction: column; gap: 0.8rem; }
+.card-read {
+  display: inline-block; padding: 0.4rem 0.9rem; border-radius: 6px;
+  background: #f0cd0a; color: #111; font-weight: bold; text-decoration: none; font-size: 0.85rem;
+}
+
+.form-container label { display: block; }
+.form-message { padding: 0.7rem 1rem; border-radius: 8px; margin: 0; }
+.form-message p { margin: 0.3rem 0; }
+.form-message.error { background: rgba(190, 40, 40, 0.35); border: 1px solid #ff8a8a; color: #ffd9d9; }
+.form-message.success { background: rgba(40, 140, 70, 0.3); border: 1px solid #7fe0a0; color: #dfffe9; }
+.form-message[hidden] { display: none; }
+.result:empty { display: none; }
+.cover-preview { max-height: 160px; align-self: center; border-radius: 8px; }
+.logout-form { text-align: center; margin: 0; }
+.form-container .link-button {
+  background: none; color: #f0cd0a; text-decoration: underline; padding: 0.3rem; transform: none;
+}
+.form-container .link-button:hover { background: none; color: #fff; transform: none; }
+.form-container button:disabled { opacity: 0.6; cursor: wait; transform: none; }
+
+@media (max-width: 868px) {
+  .hand h1 { font-size: 2.4rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate { opacity: 1; transform: none; }
+  .hand h1, .hand p, .btn-hand { opacity: 1; }
+  #particles { display: none; }
+}

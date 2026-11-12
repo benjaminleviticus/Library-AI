@@ -1,0 +1,21 @@
+# Use Gradle + JDK for development
+FROM gradle:8.7-jdk21
+WORKDIR /app
+
+# Copy Gradle wrapper and make it executable
+COPY gradlew ./
+COPY gradle ./gradle
+RUN chmod +x gradlew
+
+# Copy Gradle build files and cache dependencies
+COPY build.gradle settings.gradle ./
+RUN ./gradlew build -x test --no-daemon || echo "Dependencies cached"
+
+# Copy source code
+COPY src ./src
+
+# Expose Spring Boot port
+EXPOSE 8081
+
+# Run Spring Boot in dev mode with hot reload
+ENTRYPOINT ["./gradlew", "bootRun", "--no-daemon"]

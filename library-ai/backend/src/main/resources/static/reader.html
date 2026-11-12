@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Reader</title>
+  <link rel="icon" href="images/book-logo.webp" type="image/webp">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/reader.css">
+</head>
+<body>
+  <header>
+    <a href="index.html" class="back-btn">← Back to Library</a>
+    <div class="title-section">
+      <h2 id="book-title">Loading...</h2>
+      <p id="book-author"></p>
+    </div>
+  </header>
+
+  <main id="page-container" aria-live="polite"></main>
+
+  <div class="nav">
+    <button id="prev" type="button" disabled>Previous</button>
+    <span id="page-count">Page 1</span>
+    <button id="next" type="button" disabled>Next</button>
+    <button id="zoom-out" type="button" aria-label="Zoom out">−</button>
+    <button id="zoom-in" type="button" aria-label="Zoom in">+</button>
+  </div>
+  <p class="reader-hint">Tip: use the ← → keys to turn pages and + / − to zoom.</p>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
+  <script type="module" src="js/reader.js"></script>
+</body>
+</html>

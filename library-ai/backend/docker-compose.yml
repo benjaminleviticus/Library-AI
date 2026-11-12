@@ -1,0 +1,58 @@
+version: '3.9'
+
+services:
+  db:
+    image: pgvector/pgvector:0.8.1-pg15-bookworm
+    container_name: library-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "${DB_PASSWORD:?Set DB_PASSWORD in backend/.env}"
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db-init:/docker-entrypoint-initdb.d
+      - library-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile   # production Dockerfile
+    container_name: library-app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: "${DB_PASSWORD:?Set DB_PASSWORD in backend/.env}"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SERVER_PORT: 8081
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+
+  flowise:
+    image: flowiseai/flowise:latest
+    container_name: flowise
+    ports:
+      - "8082:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://postgres:${DB_PASSWORD:?Set DB_PASSWORD in backend/.env}@db:5432/postgres
+    volumes:
+      - flowise_data:/root/.flowise
+    depends_on:
+      - db
+    restart: unless-stopped
+
+volumes:
+  flowise_data:
+  library-db-data:
+  

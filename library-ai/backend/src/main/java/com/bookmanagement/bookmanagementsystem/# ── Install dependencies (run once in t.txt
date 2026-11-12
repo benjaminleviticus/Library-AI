@@ -1,0 +1,251 @@
+# ── Install dependencies (run once in terminal) ───────────────────────
+# pip install pytesseract easyocr python-doctr[torch] pdf2image pillow matplotlib numpy
+# Windows: download Tesseract from https://github.com/UB-Mannheim/tesseract/wiki
+# Mac:     brew install tesseract poppler
+# Linux:   sudo apt install tesseract-ocr poppler-utils
+
+import re
+import time
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+from PIL import Image, ImageDraw
+from pdf2image import convert_from_path
+import pytesseract
+import easyocr
+from doctr.io import DocumentFile
+from doctr.models import ocr_predictor
+
+# ── CONFIG ────────────────────────────────────────────────────────────
+PDF_PATH = r"C:\Users\benja\OneDrive\Documents\LenderFeesWorksheetNew.pdf"   # <-- change this to your PDF path
+DPI      = 300
+
+# Windows only: point to your Tesseract install
+# pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
+# ── Convert PDF to images ─────────────────────────────────────────────
+print(f"📄 Converting PDF: {PDF_PATH}")
+images = convert_from_path(PDF_PATH, dpi=DPI)
+
+output_dir = "ocr_pages"
+os.makedirs(output_dir, exist_ok=True)
+
+all_image_paths = []
+for i, page in enumerate(images):
+    path = os.path.join(output_dir, f"page_{i+1}.png")
+    page.save(path, "PNG")
+    all_image_paths.append(path)
+
+print(f"✅ {len(images)} page(s) converted → saved to '{output_dir}/'")
+
+# ── Initialize engines ────────────────────────────────────────────────
+print("\n🔧 Initializing OCR engines...")
+
+easy_reader = easyocr.Reader(['en'], gpu=False)
+print("  EasyOCR    ✅")
+
+doctr_model = ocr_predictor(
+    det_arch='db_resnet50',
+    reco_arch='crnn_vgg16_bn',
+    pretrained=True
+)
+print("  docTR      ✅")
+print("  Tesseract  ✅")
+
+# ── Run all 3 engines on every page ──────────────────────────────────
+results = {"Tesseract": [], "EasyOCR": [], "docTR": []}
+times   = {"Tesseract": 0,  "EasyOCR": 0,  "docTR": 0}
+
+for i, (page, img_path) in enumerate(zip(images, all_image_paths)):
+    print(f"\n📄 Page {i+1}/{len(images)}")
+
+    # Tesseract
+    t0   = time.time()
+    raw  = pytesseract.image_to_string(page)
+    data = pytesseract.image_to_data(page, output_type=pytesseract.Output.DICT)
+    times["Tesseract"] += time.time() - t0
+    results["Tesseract"].append({"raw": raw, "data": data})
+    print(f"  Tesseract  ✅  {len(raw)} chars")
+
+    # EasyOCR
+    t0   = time.time()
+    easy = easy_reader.readtext(img_path)
+    times["EasyOCR"] += time.time() - t0
+    results["EasyOCR"].append(easy)
+    print(f"  EasyOCR    ✅  {len(easy)} segments")
+
+    # docTR
+    t0 = time.time()
+    try:
+        doc    = DocumentFile.from_images(img_path)
+        result = doctr_model(doc)
+        times["docTR"] += time.time() - t0
+        results["docTR"].append(result)
+        words = sum(
+            len(line.words)
+            for pg in result.pages
+            for block in pg.blocks
+            for line in block.lines
+        )
+        print(f"  docTR      ✅  {words} words")
+    except Exception as e:
+        print(f"  docTR      ❌  {e}")
+        results["docTR"].append(None)
+        times["docTR"] += time.time() - t0
+
+print(f"\n✅ All pages processed")
+print(f"⏱️  Tesseract: {times['Tesseract']:.1f}s | "
+      f"EasyOCR: {times['EasyOCR']:.1f}s | "
+      f"docTR: {times['docTR']:.1f}s")
+
+# ── Text extraction helpers ───────────────────────────────────────────
+def tesseract_text(page_result):
+    return page_result["raw"]
+
+def easyocr_text(page_result):
+    return " ".join(t for _, t, c in page_result if c > 0.5)
+
+def doctr_text(result):
+    if not result:
+        return ""
+    words = []
+    for pg in result.pages:
+        for block in pg.blocks:
+            for line in block.lines:
+                for word in line.words:
+                    if word.confidence >= 0.5:
+                        words.append(word.value)
+    return " ".join(words)
+
+extractors = {
+    "Tesseract": tesseract_text,
+    "EasyOCR":   easyocr_text,
+    "docTR":     doctr_text,
+}
+
+# ── Bounding box drawing helpers ──────────────────────────────────────
+def draw_tesseract(page, data):
+    img  = page.copy()
+    draw = ImageDraw.Draw(img)
+    for i in range(len(data["text"])):
+        if int(data["conf"][i]) > 60:
+            x, y, w, h = data["left"][i], data["top"][i], data["width"][i], data["height"][i]
+            draw.rectangle([x, y, x+w, y+h], outline="red", width=2)
+    return img
+
+def draw_easyocr(page, result):
+    img  = page.copy()
+    draw = ImageDraw.Draw(img)
+    for bbox, text, conf in result:
+        if conf > 0.5:
+            tl = tuple(map(int, bbox[0]))
+            br = tuple(map(int, bbox[2]))
+            draw.rectangle([tl, br], outline="green", width=2)
+    return img
+
+def draw_doctr(page, result, min_conf=0.5):
+    img  = page.copy()
+    draw = ImageDraw.Draw(img)
+    if not result:
+        return img
+    w, h = page.size
+    for pg in result.pages:
+        for block in pg.blocks:
+            for line in block.lines:
+                for word in line.words:
+                    if word.confidence >= min_conf:
+                        (x1, y1), (x2, y2) = word.geometry
+                        draw.rectangle(
+                            [x1*w, y1*h, x2*w, y2*h],
+                            outline="blue", width=2
+                        )
+    return img
+
+# ── Visualise bounding boxes ──────────────────────────────────────────
+vis_dir = "ocr_visualisations"
+os.makedirs(vis_dir, exist_ok=True)
+
+for i, (page, img_path) in enumerate(zip(images, all_image_paths)):
+    tess_img  = draw_tesseract(page, results["Tesseract"][i]["data"])
+    easy_img  = draw_easyocr(page, results["EasyOCR"][i])
+    doctr_img = draw_doctr(page, results["docTR"][i])
+
+    fig, axes = plt.subplots(1, 4, figsize=(36, 9))
+    axes[0].imshow(page);      axes[0].set_title(f"Original — Page {i+1}"); axes[0].axis("off")
+    axes[1].imshow(tess_img);  axes[1].set_title("Tesseract (red)");         axes[1].axis("off")
+    axes[2].imshow(easy_img);  axes[2].set_title("EasyOCR (green)");         axes[2].axis("off")
+    axes[3].imshow(doctr_img); axes[3].set_title("docTR (blue)");             axes[3].axis("off")
+    plt.suptitle(f"Bounding Box Comparison — Page {i+1}", fontsize=14, fontweight="bold")
+    plt.tight_layout()
+
+    save_path = os.path.join(vis_dir, f"page_{i+1}_comparison.png")
+    plt.savefig(save_path, dpi=150, bbox_inches="tight")
+    plt.show()
+    print(f"  💾 Saved → {save_path}")
+
+# ── Keyword extraction ────────────────────────────────────────────────
+keywords = {
+    "Loan Amount":      r"\$[\d,]+|loan amount",
+    "Lender Name":      r"lender|bank|mortgage|financial",
+    "Interest Rate":    r"\d+\.?\d*\s*%|interest rate",
+    "Borrower Name":    r"borrower|applicant",
+    "Property Address": r"property|address|street|ave|blvd",
+}
+
+full_text = {}
+for engine, extractor in extractors.items():
+    full_text[engine] = " ".join(
+        extractor(results[engine][i]) for i in range(len(images))
+    )
+
+print("\n" + "=" * 70)
+print(f"{'Field':<22} {'Tesseract':<18} {'EasyOCR':<18} {'docTR'}")
+print("=" * 70)
+for field, pattern in keywords.items():
+    row = f"{field:<22}"
+    for engine in ["Tesseract", "EasyOCR", "docTR"]:
+        found = "✅ Found  " if re.search(pattern, full_text[engine], re.IGNORECASE) else "❌ Missing"
+        row += f" {found:<18}"
+    print(row)
+print("=" * 70)
+
+print("\n📏 Total character count:")
+for engine, text in full_text.items():
+    print(f"  {engine:<12}: {len(text):,} chars")
+
+print("\n⏱️  Processing time:")
+for engine, t in times.items():
+    print(f"  {engine:<12}: {t:.2f}s")
+
+# ── Per-page character count chart ───────────────────────────────────
+page_nums     = list(range(1, len(images)+1))
+tess_counts   = [len(tesseract_text(results["Tesseract"][i]))  for i in range(len(images))]
+easy_counts   = [len(easyocr_text(results["EasyOCR"][i]))      for i in range(len(images))]
+doctr_counts  = [len(doctr_text(results["docTR"][i]))          for i in range(len(images))]
+
+x     = np.arange(len(page_nums))
+width = 0.28
+
+fig, ax = plt.subplots(figsize=(max(10, len(images)*2), 5))
+ax.bar(x - width, tess_counts,  width, label="Tesseract", color="tomato")
+ax.bar(x,         easy_counts,  width, label="EasyOCR",   color="mediumseagreen")
+ax.bar(x + width, doctr_counts, width, label="docTR",     color="steelblue")
+ax.set_xlabel("Page"); ax.set_ylabel("Characters extracted")
+ax.set_title("Characters Extracted Per Page — Engine Comparison")
+ax.set_xticks(x); ax.set_xticklabels([f"P{n}" for n in page_nums])
+ax.legend(); plt.tight_layout()
+plt.savefig(os.path.join(vis_dir, "character_count_chart.png"), dpi=150, bbox_inches="tight")
+plt.show()
+
+# ── Save extracted text to file ───────────────────────────────────────
+txt_path = "ocr_extracted_text.txt"
+with open(txt_path, "w", encoding="utf-8") as f:
+    for engine, extractor in extractors.items():
+        f.write(f"\n{'='*60}\n{engine}\n{'='*60}\n")
+        for i in range(len(images)):
+            f.write(f"\n--- Page {i+1} ---\n")
+            f.write(extractor(results[engine][i]) or "(no text detected)")
+            f.write("\n")
+
+print(f"\n💾 Extracted text saved → {txt_path}")
+print(f"💾 Visualisations saved → {vis_dir}/")

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login</title>
+  <link rel="icon" href="/images/book-logo.webp" type="image/webp">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="hand-bg">
+  <div class="form-page animate">
+    <div class="form-container">
+      <h2>Admin Login</h2>
+
+      <p id="errorMessage" class="form-message error" role="alert" hidden>Invalid username or password.</p>
+      <p id="logoutMessage" class="form-message success" role="status" hidden>You have been logged out.</p>
+
+      <form method="post" action="/login">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" autocomplete="username" required autofocus>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required>
+
+        <button type="submit">Login</button>
+      </form>
+
+      <a href="/" class="form-link">← Back to Home</a>
+    </div>
+  </div>
+
+  <script src="/js/scroll.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    document.getElementById('errorMessage').hidden = !params.has('error');
+    document.getElementById('logoutMessage').hidden = !params.has('logout');
+  </script>
+</body>
+</html>

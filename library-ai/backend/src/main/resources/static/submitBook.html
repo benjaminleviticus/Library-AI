@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Submit a Book</title>
+  <link rel="icon" href="/images/book-logo.webp" type="image/webp">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="hand-bg">
+  <div class="form-page animate">
+    <div class="form-container">
+      <h2>Submit a Book</h2>
+
+      <form id="bookForm" action="/books/upload" method="POST" enctype="multipart/form-data">
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" required>
+
+        <label for="author">Author</label>
+        <input type="text" id="author" name="author" required>
+
+        <label for="isbn">ISBN</label>
+        <input type="text" id="isbn" name="isbn">
+
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="4"></textarea>
+
+        <label for="genre">Genre</label>
+        <input type="text" id="genre" name="genre">
+
+        <label for="img">Cover image URL</label>
+        <input type="url" id="img" name="img" placeholder="https://…">
+        <img id="coverPreview" class="cover-preview" alt="Cover preview" hidden>
+
+        <label for="file">Upload PDF (max 50 MB)</label>
+        <inpu0t type="file" id="file" name="file" accept="application/pdf" required>
+
+        <button type="submit" id="submitBtn">Submit Book</button>
+      </form>
+
+      <div id="result" class="result" role="status" aria-live="polite"></div>
+
+      <a href="/" class="form-link">← Back to Home</a>
+      <form action="/logout" method="post" class="logout-form">
+        <button type="submit" class="link-button">Log out</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/scroll.js"></script>
+  <script>
+    const MAX_PDF_BYTES = 50 * 1024 * 1024;
+
+    const form = document.getElementById('bookForm');
+    const resultDiv = document.getElementById('result');
+    const submitBtn = document.getElementById('submitBtn');
+    const fileInput = document.getElementById('file');
+    const imgInput = document.getElementById('img');
+    const preview = document.getElementById('coverPreview');
+
+    function showResult(nodes, kind) {
+      resultDiv.className = `result form-message ${kind}`;
+      resultDiv.replaceChildren(...nodes);
+    }
+    function p(text, bold) {
+      const node = document.createElement('p');
+      if (bold) { const s = document.createElement('strong'); s.textContent = text; node.appendChild(s); }
+      else node.textContent = text;
+      return node;
+    }
+
+    // Live cover preview
+    imgInput.addEventListener('change', () => {
+      const url = imgInput.value.trim();
+      preview.hidden = !url;
+      if (url) preview.src = url;
+    });
+    preview.addEventListener('error', () => { preview.hidden = true; });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const file = fileInput.files[0];
+      if (file && file.size > MAX_PDF_BYTES) {
+        showResult([p('That PDF is larger than 50 MB. Please choose a smaller file.')], 'error');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Uploading…';
+      showResult([p('Uploading, please wait…')], 'success');
+
+      try {
+        const res = await fetch('/books/upload', { method: 'POST', body: new FormData(form) });
+
+        if (res.redirected || res.status === 401 || res.status === 403) {
+          window.location.href = '/login.html';
+          return;
+        }
+        if (!res.ok) throw new Error(await res.text() || `HTTP ${res.status}`);
+
+        const data = await res.json();
+        const nodes = [p('Book added successfully!', true), p(`${data.title} by ${data.author}`)];
+
+        if (data.qrcodePath) {
+          const qr = document.createElement('img');
+          qr.src = data.qrcodePath; qr.alt = 'QR code for this book'; qr.width = 120;
+          nodes.push(qr);
+        }
+        const link = document.createElement('a');
+        link.href = `/reader.html?id=${encodeURIComponent(data.id)}`;
+        link.target = '_blank'; link.rel = 'noopener';
+        link.textContent = 'Read Book';
+        const linkP = document.createElement('p'); linkP.appendChild(link);
+        nodes.push(linkP);
+
+        showResult(nodes, 'success');
+        form.reset();
+        preview.hidden = true;
+      } catch (err) {
+        showResult([p(`Failed to upload book. ${err.message}`)], 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Book';
+      }
+    });
+  </script>
+</body>
+</html>

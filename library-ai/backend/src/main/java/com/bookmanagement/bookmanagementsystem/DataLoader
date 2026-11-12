@@ -1,0 +1,40 @@
+package com.bookmanagement.bookmanagementsystem;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import com.bookmanagement.bookmanagementsystem.entity.Book;
+import com.bookmanagement.bookmanagementsystem.repository.BookRepository;
+
+@Configuration
+public class DataLoader {
+
+    @Bean
+    CommandLineRunner loadSampleBooks(BookRepository repo) {
+        return args -> {
+            if (repo.count() == 0) {
+                repo.save(Book.builder()
+                        .title("The Hobbit")
+                        .author("J.R.R. Tolkien")
+                        .description("A fantasy adventure of Bilbo Baggins joining dwarves on a quest to reclaim their homeland from Smaug.")
+                        .img("https://covers.openlibrary.org/b/id/6979861-L.jpg")
+                        .build());
+
+                repo.save(Book.builder()
+                        .title("Harry Potter")
+                        .author("J.K. Rowling")
+                        .description("The story of a young wizard, Harry Potter, and his adventures at Hogwarts.")
+                        .img("https://covers.openlibrary.org/b/id/7984916-L.jpg")
+                        .build());
+
+                repo.save(Book.builder()
+                        .title("1984")
+                        .author("George Orwell")
+                        .description("A dystopian novel about a totalitarian regime controlling society.")
+                        .img("https://covers.openlibrary.org/b/id/7222246-L.jpg")
+                        .build());
+            }
+        };
+    }
+}

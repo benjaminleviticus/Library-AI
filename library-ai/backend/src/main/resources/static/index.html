@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Browse, search and read books in our online library.">
+  <title>Library - Home</title>
+  <link rel="icon" href="images/book-logo.webp" type="image/webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="hand-bg">
+  <a class="skip-link" href="#featured">Skip to books</a>
+
+  <!-- Navigation -->
+  <nav aria-label="Main">
+    <div class="brand"><img src="images/book-logo.webp" alt="" class="book-img" width="18" height="16"> Library</div>
+    <div class="nav-links" id="navLinks">
+      <a href="#hand">Home</a>
+      <a href="#featured">Featured Books</a>
+      <a href="/submitBook.html">Submit Book</a>
+    </div>
+    <button class="hamburger" type="button" aria-label="Toggle menu" aria-expanded="false" aria-controls="navLinks">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div id="particles" aria-hidden="true"></div>
+
+  <!-- hand-book Section -->
+  <div class="hand-section-wrapper">
+    <section class="hand animate" id="hand">
+      <div class="hand-content">
+        <h1>Welcome to the Library</h1>
+        <p>Pick a book you like</p>
+        <a href="#featured" class="btn-hand">Explore Books</a>
+      </div>
+      <img src="images/hand-book.webp" alt="Hand holding a book" class="hand-img" width="900" height="840">
+    </section>
+  </div>
+
+  <!-- Featured Books Section -->
+  <section class="container animate" id="featured">
+    <h2>Featured Books</h2>
+
+    <div class="book-filters">
+      <label class="sr-only" for="bookSearch">Search books</label>
+      <input type="search" id="bookSearch" placeholder="Search by title or author" autocomplete="off">
+      <label class="sr-only" for="genreFilter">Filter by genre</label>
+      <select id="genreFilter"><option value="">All genres</option></select>
+    </div>
+
+    <p id="bookStatus" class="book-status" role="status" aria-live="polite"></p>
+
+    <div class="featured-wrapper" id="featuredWrapper">
+      <ul id="bookList">
+        <!-- JS dynamically adds book cards -->
+      </ul>
+    </div>
+  </section>
+
+  <script defer src="js/nav.js"></script>
+  <script defer src="js/scroll.js"></script>
+  <script defer type="module" src="js/main.js"></script>
+</body>
+</html>
